@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Course Registration & Event Calendar</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb;
+      --success:#10b981;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue";
+      background:linear-gradient(180deg,#eef2ff 0%,var(--bg) 100%); color:#111827; padding:24px;
+    }
+    .wrap{max-width:980px; margin:0 auto; display:grid; gap:18px; grid-template-columns:1fr 1fr;}
+    header {grid-column:1/-1; display:flex; gap:12px; align-items:center; justify-content:space-between;}
+    h1{font-size:18px; margin:0}
+    p.lead{margin:0; color:var(--muted); font-size:13px}
+    .card{background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);}
+    .section-title{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px;}
+    input[type="text"], input[type="date"], select, textarea{
+      width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef; outline:none; font-size:14px;
+    }
+    button{background:var(--accent); color:#fff; border:0; padding:10px 12px; border-radius:8px; cursor:pointer;}
+    button.ghost{background:transparent; color:var(--accent); border:1px solid #dbeafe;}
+    .small{font-size:13px}
+    .list{margin-top:12px; display:flex; flex-direction:column; gap:8px;}
+    .item{padding:10px; border-radius:8px; background:#fafafa; display:flex; justify-content:space-between; align-items:center; gap:12px; border:1px solid #f1f5f9;}
+    .item .meta{color:var(--muted); font-size:13px}
+    .flex{display:flex; gap:8px; align-items:center}
+    .full-width{grid-column:1/-1}
+    @media (max-width:880px){
+      .wrap{grid-template-columns:1fr; padding-bottom:60px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Feature Demo — Course Registration & Event Calendar</h1>
+        <p class="lead">Two separate features implemented in one page. Data stored in localStorage.</p>
+      </div>
+      <div class="small">Tip: add items and refresh — data persists locally.</div>
+    </header>
+
+    <!-- Course Registration (feature-course) -->
+    <section class="card" id="course-card" aria-labelledby="course-title">
+      <div class="section-title">
+        <div>
+          <h2 id="course-title" style="margin:0;font-size:16px">Course Registration</h2>
+          <div class="small">Add courses and enroll students.</div>
+        </div>
+        <div class="small">Feature: <strong>feature-course</strong></div>
+      </div>
+
+      <form id="course-form" onsubmit="return false">
+        <label for="course-name">Course name</label>
+        <input id="course-name" type="text" placeholder="e.g. Introduction to Web Dev" required>
+
+        <label for="course-code" style="margin-top:10px">Course code</label>
+        <input id="course-code" type="text" placeholder="e.g. CS101" required>
+
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          <button id="add-course">Add course</button>
+          <button id="clear-courses" type="button" class="ghost">Clear courses</button>
+        </div>
+      </form>
+
+      <div class="list" id="courses-list" aria-live="polite"></div>
+
+      <hr style="margin:12px 0; border:none; border-top:1px solid #eef2ff" />
+
+      <div style="display:grid; grid-template-columns:1fr 120px; gap:8px; align-items:end">
+        <div>
+          <label for="student-name">Student name</label>
+          <input id="student-name" type="text" placeholder="e.g. Alice">
+        </div>
+        <div>
+          <label for="select-course">Enroll into</label>
+          <select id="select-course"><option value="">-- select course --</option></select>
+        </div>
+      </div>
+      <div style="margin-top:10px; display:flex; gap:8px">
+        <button id="enroll-btn">Enroll student</button>
+        <button id="clear-enrollments" type="button" class="ghost">Clear enrollments</button>
+      </div>
+
+      <div class="list" id="enrollments-list" style="margin-top:12px"></div>
+    </section>
+
+    <!-- Event Calendar (feature-event) -->
+    <section class="card" id="event-card" aria-labelledby="event-title">
+      <div class="section-title">
+        <div>
+          <h2 id="event-title" style="margin:0;font-size:16px">Event Calendar</h2>
+          <div class="small">Create events and view upcoming events.</div>
+        </div>
+        <div class="small">Feature: <strong>feature-event</strong></div>
+      </div>
+
+      <form id="event-form" onsubmit="return false">
+        <label for="event-title-input">Event title</label>
+        <input id="event-title-input" type="text" placeholder="e.g. Semester Orientation" required>
+
+        <label for="event-date" style="margin-top:10px">Date</label>
+        <input id="event-date" type="date" required>
+
+        <label for="event-desc" style="margin-top:10px">Description (optional)</label>
+        <textarea id="event-desc" rows="2" placeholder="Short description"></textarea>
+
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          <button id="add-event">Add event</button>
+          <button id="clear-events" type="button" class="ghost">Clear events</button>
+        </div>
+      </form>
+
+      <div class="list" id="events-list" aria-live="polite"></div>
+    </section>
+
+    <!-- Full width: Conflict demo & notes -->
+    <section class="card full-width" aria-labelledby="notes-title">
+      <div class="section-title">
+        <div>
+          <h3 id="notes-title" style="margin:0;font-size:15px">Notes & Demo Controls</h3>
+        </div>
+        <div class="small">Merge conflict demo (simulated)</div>
+      </div>
+
+      <p class="small" style="margin-top:0; color:var(--muted)">
+        The two features above are implemented independently (as if on separate branches).
+        Below is a simulated "merge conflict" flow that demonstrates resolving a conflict
+        when both features changed the same resource (app-summary).
+      </p>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px">
+        <button id="make-conflict" class="ghost">Simulate conflict</button>
+        <button id="resolve-conflict">Resolve conflict</button>
+        <button id="show-summary" class="ghost">Show app summary</button>
+      </div>
+
+      <pre id="app-summary" style="background:#0f172a;color:#fff;padding:12px;border-radius:8px;margin-top:12px;display:none;white-space:pre-wrap"></pre>
+    </section>
+  </div>
+
+  <script>
+    // STORAGE KEYS
+    const COURSES_KEY = 'demo_courses_v1';
+    const ENROLLMENTS_KEY = 'demo_enrollments_v1';
+    const EVENTS_KEY = 'demo_events_v1';
+    const APP_SUMMARY_KEY = 'demo_app_summary_v1';
+
+    // UTIL: load/save
+    const loadJSON = (k, fallback=[]) => {
+      try { const raw = localStorage.getItem(k); return raw ? JSON.parse(raw) : fallback; } catch(e){ return fallback; }
+    };
+    const saveJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    // --- COURSES ---
+    const coursesListEl = document.getElementById('courses-list');
+    const selectCourseEl = document.getElementById('select-course');
+    const enrollmentsListEl = document.getElementById('enrollments-list');
+
+    function renderCourses(){
+      const courses = loadJSON(COURSES_KEY, []);
+      coursesListEl.innerHTML = '';
+      selectCourseEl.innerHTML = '<option value="">-- select course --</option>';
+      if(!courses.length) {
+        coursesListEl.innerHTML = '<div class="small" style="color:var(--muted)">No courses added yet.</div>';
+      } else {
+        courses.forEach((c, idx) => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.innerHTML = `<div>
+            <strong>${c.name}</strong><div class="meta">${c.code}</div>
+          </div>
+          <div class="flex">
+            <button class="ghost" data-idx="${idx}" onclick="deleteCourse(${idx})">Delete</button>
+          </div>`;
+          coursesListEl.appendChild(item);
+
+          const opt = document.createElement('option');
+          opt.value = c.code;
+          opt.textContent = ${c.name} (${c.code});
+          selectCourseEl.appendChild(opt);
+        });
+      }
+    }
+
+    function addCourse(name, code){
+      const arr = loadJSON(COURSES_KEY, []);
+      arr.push({name, code});
+      saveJSON(COURSES_KEY, arr);
+      renderCourses();
+    }
+    function deleteCourse(idx){
+      const arr = loadJSON(COURSES_KEY, []);
+      arr.splice(idx,1);
+      saveJSON(COURSES_KEY, arr);
+      renderCourses();
+    }
+    document.getElementById('add-course').addEventListener('click', () => {
+      const name = document.getElementById('course-name').value.trim();
+      const code = document.getElementById('course-code').value.trim().toUpperCase();
+      if(!name || !code) { alert('Provide course name and code'); return; }
+      addCourse(name, code);
+      document.getElementById('course-name').value='';
+      document.getElementById('course-code').value='';
+    });
+    document.getElementById('clear-courses').addEventListener('click', () => {
+      if(confirm('Clear all courses?')) { localStorage.removeItem(COURSES_KEY); renderCourses(); }
+    });
+
+    // --- ENROLLMENTS ---
+    function renderEnrollments(){
+      const enrolls = loadJSON(ENROLLMENTS_KEY, []);
+      enrollmentsListEl.innerHTML = '';
+      if(!enrolls.length) enrollmentsListEl.innerHTML = '<div class="small" style="color:var(--muted)">No enrollments yet.</div>';
+      else enrolls.forEach((e, idx) => {
+        const it = document.createElement('div');
+        it.className='item';
+        it.innerHTML = `<div><strong>${e.student}</strong><div class="meta">${e.course}</div></div>
+          <div class="flex">
+            <button class="ghost" onclick="removeEnrollment(${idx})">Remove</button>
+          </div>`;
+        enrollmentsListEl.appendChild(it);
+      });
+    }
+    function enrollStudent(student, course){
+      const arr = loadJSON(ENROLLMENTS_KEY, []);
+      arr.push({student, course, ts:new Date().toISOString()});
+      saveJSON(ENROLLMENTS_KEY, arr);
+      renderEnrollments();
+    }
+    function removeEnrollment(idx){
+      const arr = loadJSON(ENROLLMENTS_KEY, []);
+      arr.splice(idx,1);
+      saveJSON(ENROLLMENTS_KEY, arr);
+      renderEnrollments();
+    }
+    document.getElementById('enroll-btn').addEventListener('click', () => {
+      const student = document.getElementById('student-name').value.trim();
+      const course = document.getElementById('select-course').value;
+      if(!student || !course) { alert('Provide student name and select a course'); return; }
+      enrollStudent(student, course);
+      document.getElementById('student-name').value='';
+    });
+    document.getElementById('clear-enrollments').addEventListener('click', () => {
+      if(confirm('Clear all enrollments?')) { localStorage.removeItem(ENROLLMENTS_KEY); renderEnrollments(); }
+    });
+
+    // --- EVENTS ---
+    const eventsListEl = document.getElementById('events-list');
+    function renderEvents(){
+      const events = loadJSON(EVENTS_KEY, []);
+      eventsListEl.innerHTML='';
+      if(!events.length) eventsListEl.innerHTML = '<div class="small" style="color:var(--muted)">No events yet.</div>';
+      else {
+        // sort by date ascending
+        events.sort((a,b)=> new Date(a.date) - new Date(b.date));
+        events.forEach((ev, idx) => {
+          const it = document.createElement('div');
+          it.className='item';
+          it.innerHTML = `<div>
+            <strong>${ev.title}</strong>
+            <div class="meta">${new Date(ev.date).toLocaleDateString()}${ev.desc ? ' — ' + ev.desc : ''}</div>
+          </div>
+          <div class="flex">
+            <button class="ghost" onclick="deleteEvent(${idx})">Delete</button>
+          </div>`;
+          eventsListEl.appendChild(it);
+        });
+      }
+    }
+    function addEvent(title, date, desc){
+      const arr = loadJSON(EVENTS_KEY, []);
+      arr.push({title, date, desc});
+      saveJSON(EVENTS_KEY, arr);
+      renderEvents();
+    }
+    function deleteEvent(idx){
+      const arr = loadJSON(EVENTS_KEY, []);
+      arr.splice(idx,1);
+      saveJSON(EVENTS_KEY, arr);
+      renderEvents();
+    }
+    document.getElementById('add-event').addEventListener('click', () => {
+      const title = document.getElementById('event-title-input').value.trim();
+      const date = document.getElementById('event-date').value;
+      const desc = document.getElementById('event-desc').value.trim();
+      if(!title || !date) { alert('Provide title and date'); return; }
+      addEvent(title, date, desc);
+      document.getElementById('event-title-input').value=''; document.getElementById('event-date').value=''; document.getElementById('event-desc').value='';
+    });
+    document.getElementById('clear-events').addEventListener('click', () => {
+      if(confirm('Clear all events?')) { localStorage.removeItem(EVENTS_KEY); renderEvents(); }
+    });
+
+    // --- Simulated merge conflict (for demo) ---
+    // Two branches both write to APP_SUMMARY_KEY. Simulate conflict and resolution.
+    function makeConflict(){
+      // branch A version (feature-course) writes summaryA
+      const summaryA = `Courses: ${loadJSON(COURSES_KEY, []).length} course(s)
+Enrollments: ${loadJSON(ENROLLMENTS_KEY, []).length} enrollment(s)
+(Version: feature-course)`;
+      // branch B version (feature-event) writes summaryB
+      const summaryB = `Events: ${loadJSON(EVENTS_KEY, []).length} upcoming event(s)
+(Version: feature-event)`;
+      // Simulate simultaneous writes -> conflict stored as object
+      const conflict = {conflict:true, a:summaryA, b:summaryB, ts:new Date().toISOString()};
+      localStorage.setItem(APP_SUMMARY_KEY, JSON.stringify(conflict));
+      alert('Conflict created in app summary (localStorage). Click "Show app summary" to view.');
+      renderSummaryIfVisible();
+    }
+    function resolveConflict(){
+      const raw = localStorage.getItem(APP_SUMMARY_KEY);
+      if(!raw){ alert('No conflict to resolve. Create one first.'); return; }
+      try {
+        const obj = JSON.parse(raw);
+        if(!obj.conflict){ alert('No conflict found — summary is already resolved.'); return; }
+        // simple resolution: merge both pieces
+        const resolved = ${obj.a}\n${obj.b}\n(Resolved on ${new Date().toLocaleString()});
+        localStorage.setItem(APP_SUMMARY_KEY, JSON.stringify({conflict:false, merged:resolved, ts:new Date().toISOString()}));
+        alert('Conflict resolved and merged summary written.');
+        renderSummaryIfVisible();
+      } catch(e){ alert('Could not parse summary'); }
+    }
+    function showSummary(){
+      renderSummary(true);
+    }
+    function renderSummary(showNow=false){
+      const el = document.getElementById('app-summary');
+      const raw = localStorage.getItem(APP_SUMMARY_KEY);
+      if(!raw){ el.style.display='none'; el.textContent=''; if(showNow) alert('No summary saved yet.'); return; }
+      try {
+        const obj = JSON.parse(raw);
+        if(obj.conflict){
+          el.style.display='block';
+          el.textContent = << CONFLICT DETECTED >>\n\n--- feature-course writes ---\n${obj.a}\n\n--- feature-event writes ---\n${obj.b}\n\nCreated at: ${obj.ts};
+          return;
+        } else if(obj.merged){
+          el.style.display='block';
+          el.textContent = << MERGED SUMMARY >>\n\n${obj.merged}\n\nSaved at: ${obj.ts};
+          return;
+        }
+      } catch(e){ el.style.display='block'; el.textContent = raw; return; }
+    }
+    function renderSummaryIfVisible(){ const el = document.getElementById('app-summary'); if(el.style.display!=='none') renderSummary(); }
+
+    document.getElementById('make-conflict').addEventListener('click', makeConflict);
+    document.getElementById('resolve-conflict').addEventListener('click', resolveConflict);
+    document.getElementById('show-summary').addEventListener('click', showSummary);
+
+    // initial render
+    (()=>{
+      renderCourses();
+      renderEnrollments();
+      renderEvents();
+    })();
+
+    // expose a few helpers to window for inline onclick use
+    window.deleteCourse = deleteCourse;
+    window.deleteEvent = deleteEvent;
+    window.removeEnrollment = removeEnrollment;
+  </script>
+</body>
+</html>
